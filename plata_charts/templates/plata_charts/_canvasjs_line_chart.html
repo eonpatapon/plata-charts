@@ -1,8 +1,8 @@
 {% load plata_charts %}
 {% to_canvasjs orders range as dataSeries %}
 
-<script type="text/javascript" src="{{ STATIC_URL }}plata_charts/js/jquery.canvasjs.min.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}plata_charts/js/canvasjs.min.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}plata_charts/js/canvasjs/jquery.canvasjs.min.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}plata_charts/js/canvasjs/canvasjs.min.js"></script>
 
 <div id="canvasjs-chart-{{ uuid }}" style="height: 400px"></div>
 
