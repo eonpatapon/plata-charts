@@ -1,0 +1,37 @@
+{% load plata_charts %}
+{% to_jqplot orders range as jqplot_data %}
+
+<script type="text/javascript" src="{{ STATIC_URL }}plata_charts/js/jqPlot/jquery.jqplot.min.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}plata_charts/js/jqPlot/plugins/jqplot.dateAxisRenderer.min.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}plata_charts/js/jqPlot/plugins/jqplot.highlighter.min.js"></script>
+
+<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}plata_charts/js/jqPlot/jquery.jqplot.css" />
+
+<div id="jqplot-chart-{{ uuid }}"></div>
+
+<script type="text/javascript">
+  var jqPlotData = {{ jqplot_data }};
+
+  // convert from isoformat to date objects
+  for (var index in jqPlotData.data) {
+    jqPlotData.data[index] = jqPlotData.data[index].map(function(point) {
+      point[0] = new Date(point[0]);
+      return point;
+    });
+  }
+
+  $.jqplot('jqplot-chart-{{ uuid }}', jqPlotData.data, {
+    axes: {
+      xaxis: {
+        renderer: $.jqplot.DateAxisRenderer
+      }
+    },
+    series: jqPlotData.series,
+    legend: {
+      show: true
+    },
+    highlighter: {
+      show: true
+    }
+  });
+</script>

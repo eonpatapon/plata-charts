@@ -1,0 +1,30 @@
+{% extends "admin/change_form.html" %}
+{% load i18n %}
+{% load plata_charts %}
+
+{% block after_field_sets %}
+  {% if original %}
+  <div class="grp-module">
+    <h2>{% trans "Chart" %}</h2>
+    <div id="chart-{{ original.uuid }}">
+      <p>{% trans "Generating graph, please wait..." %}</p>
+    </div>
+    <script type="text/javascript">
+      var $ = grp.jQuery;
+      $.ajax("{% url 'plata_charts_chart' original.uuid %}", {
+        type: "get",
+        success: function(result) {
+          $("#chart-{{ original.uuid }}").html(result);
+        },
+        error: function(error) {
+          $("#chart-{{ original.uuid }}").html($("<p>")
+                                                .css("padding", "5px")
+                                                .css("color", "red")
+                                                .html(error.responseText)
+                                              );
+        }
+      });
+    </script>
+  </div>
+  {% endif %}
+{% endblock %}

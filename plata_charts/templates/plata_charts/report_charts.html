@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% load plata_charts %}
+
+{% block js_extra %}
+<script type="text/javascript" src="{{ STATIC_URL }}js/bootstrap-datetimepicker.js"></script>
+{% endblock %}
+{% block css_extra %}
+<link href="{{ STATIC_URL }}css/datetimepicker.css" type="text/css" media="all" rel="stylesheet" />
+{% endblock css_extra %}
+
+{% block body %}
+{% chart_uuid as uuid %}
+
+<div class="container">
+
+  <h1>Orders by product chart</h1>
+
+  <form class="form-inline">
+    <input name="uuid" type="hidden" value="{{ uuid }}" />
+    <div class="row">
+      <div class="span8">
+        <div class="control-group">
+          <label for="{{ form.products.id_for_label }}">{{ form.products.label }}</label>
+          <div class="controls">
+            {{ form.products }}
+          </div>
+        </div>
+      </div>
+      <div class="span4">
+        <div class="control-group">
+          <label for="{{ form.start_date.id_for_label }}">{{ form.start_date.label }}</label>
+          <div class="controls">
+            {{ form.start_date }}
+          </div>
+        </div>
+        <div class="control-group">
+          <label for="{{ form.end_date.id_for_label }}">{{ form.end_date.label }}</label>
+          <div class="controls">
+            {{ form.end_date }}
+          </div>
+        </div>
+        <div class="control-group">
+          <label for="{{ form.step.id_for_label }}">{{ form.step.label }}</label>
+          <div class="controls">
+            {{ form.step }}
+          </div>
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-primary" type="submit">Generate!</button>
+  </form>
+  <div id="form-{{ uuid }}"></div>
+
+</div>
+
+<script type="text/javascript">
+  $("form").submit(function(event) {
+    event.preventDefault();
+
+    var formData = $(this).serializeArray(),
+        params = {
+          product_filter: {},
+          start_date: null,
+          end_date: null,
+          step: 1
+        },
+        products = []
+
+    formData.forEach(function(formItem) {
+      if (formItem.name == "products") {
+        products.push(formItem.value);
+      }
+      else if (formItem.name == "step") {
+        params.step = formItem.value;
+      }
+      else if (formItem.name.substr(-4) == "date") {
+        params[formItem.name] = formItem.value;
+      }
+    });
+
+    if (products.length == 0) {
+        $('#form-{{ uuid}}').html('<p class="alert alert-danger">You have to choose one or more products.</p>');
+        return;
+    }
+
+    if (products.length == 1) {
+      params.product_filter = JSON.stringify({'product__pk': products[0]})
+    }
+    else {
+      params.product_filter = JSON.stringify({'product__pk__in': products})
+    }
+
+    $.ajax("{% url 'plata_charts_product_chart' %}", {
+      type: 'get',
+      data: params,
+      beforeSend: function() {
+        $('#form-{{ uuid}}').html('<p class="alert alert-info">Generating graph, please wait...</p>');
+      },
+      success: function(result) {
+        $('#form-{{ uuid}}').html(result);
+      }
+    });
+  });
+</script>
+{% endblock %}

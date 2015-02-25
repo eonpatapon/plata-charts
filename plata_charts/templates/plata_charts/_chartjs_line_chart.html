@@ -1,0 +1,22 @@
+{% load plata_charts %}
+{% to_chartjs orders range as chartjs_data %}
+
+<script type="text/javascript" src="{{ STATIC_URL }}plata_charts/js/chartjs/Chart.min.js"></script>
+
+<canvas id="chartjs-chart-{{ uuid }}" height="400" width="800"></canvas>
+
+<script type="text/javascript">
+  var chartjsData = {{ chartjs_data }};
+  var ctx = document.getElementById('chartjs-chart-{{ uuid }}').getContext("2d");
+
+  // format labels
+  chartjsData.labels = chartjsData.labels.map(function(label) {
+      return new Date(label).toLocaleFormat('%d %b %Y');
+  });
+
+  Chart.defaults.global.responsive = true;
+
+  var chart = new Chart(ctx).Line(chartjsData, {
+    multiTooltipTemplate: "<%=datasetLabel%>: <%= value %>"
+  });
+</script>

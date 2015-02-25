@@ -1,0 +1,56 @@
+{% load plata_charts %}
+{% to_canvasjs orders range as dataSeries %}
+
+<script type="text/javascript" src="{{ STATIC_URL }}plata_charts/js/jquery.canvasjs.min.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}plata_charts/js/canvasjs.min.js"></script>
+
+<div id="canvasjs-chart-{{ uuid }}" style="height: 400px"></div>
+
+<script type="text/javascript">
+  var data = {{ dataSeries }};
+
+  $('.canvasjs-chart-canvas').remove();
+
+  // convert from isoformat to date objects
+  for (var index in data) {
+    data[index].dataPoints = data[index].dataPoints.map(function(d) {
+      d.x = new Date(d.x);
+      return d;
+    });
+  };
+
+  var chart = new CanvasJS.Chart("canvasjs-chart-{{ uuid }}", {
+    toolTip: {
+      shared: "true"
+    },
+    height: 400,
+    animationEnabled: true,
+    legend: {
+      fontSize: 13,
+      fontFamily: "sans-serif",
+    },
+    axisY: {
+      labelFontSize: 12,
+      valueFormatString: "# {% if count_type == 0 %}{{ filter_dict.order__currency }}{% else %}orders{% endif %}"
+    },
+    axisX: {
+      labelFontSize: 12,
+    {% if step == 0 %}
+      valueFormatString: "YYYY",
+      interval: 1,
+      intervalType: "year",
+    {% elif step == 1 %}
+      valueFormatString: "MMMM YYYY",
+      interval: 2,
+      intervalType: "month",
+    {% elif step == 3 %}
+      valueFormatString: "D MMM YYYY",
+      interval: Math.floor(data[0].dataPoints.length / 10),
+      intervalType: "day",
+    {% endif %}
+    },
+    data: data
+  });
+
+  chart.render();
+</script>

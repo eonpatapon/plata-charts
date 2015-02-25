@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% load plata_charts %}
+
+{% block js_extra %}
+<script type="text/javascript" src="{{ STATIC_URL }}plata_charts/js/UUID.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/bootstrap-datetimepicker.js"></script>
+{% endblock %}
+{% block css_extra %}
+<link href="{{ STATIC_URL }}css/datetimepicker.css" type="text/css" media="all" rel="stylesheet" />
+{% endblock css_extra %}
+
+{% block body %}
+
+<div class="navbar navbar-inverse">
+  <div class="navbar-inner">
+    <ul class="nav">
+      <li><a href="#" onclick="addChartForm();">Add report chart</a></li>
+    </ul>
+  </div>
+</div>
+<div class="container" id="charts"></div>
+
+<script type="text/javascript">
+
+  function addChartForm() {
+    var uuid = UUID.generate();
+    $('#charts').append($('<div id="container-' +  uuid + '"></div>'));
+    $.ajax("/charts/report/form/" + uuid + "/", {
+      type: 'get',
+      success: function(response) {
+        $('#container-' + uuid).html(response);
+        monitorForms();
+      }
+    });
+  };
+
+  function getCookie(name) {
+      var cookieValue = null;
+      if (document.cookie && document.cookie != '') {
+          var cookies = document.cookie.split(';');
+          for (var i = 0; i < cookies.length; i++) {
+              var cookie = jQuery.trim(cookies[i]);
+              // Does this cookie string begin with the name we want?
+              if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                  cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                  break;
+              }
+          }
+      }
+      return cookieValue;
+  };
+
+  function monitorForms() {
+    $("form").unbind("submit");
+    $("form").submit(function(event) {
+      event.preventDefault();
+      var form = $(this);
+      var uuid = form.find('input[name=uuid]').val();
+      $.ajax("/charts/report/form/" + uuid + "/", {
+        type: 'post',
+        data: $('#form-' + uuid).serialize(),
+        beforeSend: function(xhr) {
+          xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+        },
+        success: function(response) {
+          $('#container-' + uuid).html(response);
+          monitorForms();
+        }
+      });
+    });
+  };
+
+  // Add one form automatically
+  addChartForm();
+</script>
+
+{% endblock %}
